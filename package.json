@@ -4,7 +4,8 @@
   "description": "Telegram bot using IBM Watson for image recognition",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./bin/start.js"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,7 @@
   "dependencies": {
     "axios": "^0.15.3",
     "body-parser": "^1.15.2",
+    "cfenv": "^1.0.3",
     "express": "^4.14.0"
   }
 }
