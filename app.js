@@ -1,8 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
-const config = require('./config')
-const fs = require('fs')
+const config = require('./config');
+const recognize = require('./watson_connection');
 
 const app = express();
 
@@ -10,7 +10,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 var api_key = process.env.api_key || config.api
-var bot_url = 'https://api.telegram.org/bot' + api_key + '/sendMessage'
+var bot_url = 'https://api.telegram.org/bot' + api_key
 
 app.post('/msg', function (req, res) {
     const message = req.body.message;
@@ -21,11 +21,11 @@ app.post('/msg', function (req, res) {
         return res.end()
     }
 
-    const photo = message.photo;
-    if (!photo || photo.constructor !== Array) {
+    const photos = message.photo;
+    if (!photos || photos.constructor !== Array && photo.length < 4) {
         // not a photo
 
-        axios.post(bot_url, {
+        axios.post(bot_url + '/sendMessage', {
             chat_id: message.chat.id,
             text: 'Send a photo'
         })
@@ -39,28 +39,51 @@ app.post('/msg', function (req, res) {
                 console.log('Error :', err)
                 res.end('Error :' + err)
             });
+    } else {
+        
+        // recognize the picture using IBM watson visual recognition
+        var responses = photos.map((p) => recognize(p, bot_url));
+        
 
-        return res.end();
+
+        // bot has received a photos
+        Promise.all(responses)
+        .then((results) => {
+            axios.post(bot_url + '/sendMessage', {
+                chat_id: message.chat.id,
+                text: results.join('\n') + '\nphotos.length: ' + photos.length
+            })
+                .then(response => {
+                    // We get here if the message was successfully posted
+                    console.log('Message posted')
+                    res.end('ok')
+                })
+                .catch(err => {
+                    // ...and here if it was not
+                    console.log('Error :', err)
+                    res.end('Error :' + err)
+                });
+        })
+            .catch((err) => {
+                axios.post(bot_url + '/sendMessage', {
+                    chat_id: message.chat.id,
+                    text: 'err from recognize catch: ' + err
+                })
+                    .then(response => {
+                        // We get here if the message was successfully posted
+                        console.log('Message posted')
+                        res.end('ok')
+                    })
+                    .catch(err => {
+                        // ...and here if it was not
+                        console.log('Error :', err)
+                        res.end('Error :' + err)
+                    });
+            });
+
     }
 
 
-    // bot has received a photo
-    axios.post(bot_url, {
-        chat_id: message.chat.id,
-        text: 'Photo'
-    })
-        .then(response => {
-            // We get here if the message was successfully posted
-            console.log('Message posted')
-            res.end('ok')
-        })
-        .catch(err => {
-            // ...and here if it was not
-            console.log('Error :', err)
-            res.end('Error :' + err)
-        });
-
-    return res.end();
 
 });
 
