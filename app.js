@@ -48,7 +48,7 @@ app.post('/msg', function (req, res) {
 
         // recognize the picture using IBM watson visual recognition
         // the 3rd image seems to be the largest so we send that
-        var watsonResponse = recognize(photos[2], apiKey);
+        var watsonResponse = recognize(photos[photos.length - 1], apiKey);
 
 
 

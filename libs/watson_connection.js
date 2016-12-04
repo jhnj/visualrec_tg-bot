@@ -20,19 +20,25 @@ function watson(file) {
         images_file: fs.createReadStream(file)
     };
 
-    visual_recognition.classify(params, function (err, res) {
-        if (err)
-            console.log(err);
-        else
-            console.log(JSON.stringify(res, null, 2));
+    return new Promise((resolve, reject) => {
+        visual_recognition.classify(params, function (err, res) {
+            // delete image
+            fs.unlink(file, function (err) {
+                if (err) console.log('fs.unlink failed: ', err);
+                console.log('file deleted');
+            });
 
-        fs.unlink(file, function (err) {
-            if (err) console.log('fs.unlink failed: ', err);
-            console.log('file deleted');
+            if (err) {
+                console.log(err);
+                reject(err);
+            }
+            else {
+                console.log(JSON.stringify(res, null, 2));
+                resolve(parseRes(res));
+            }
+
         });
-
-    });
-    return 'watson-response';
+    })
 }
 
 
@@ -63,6 +69,39 @@ function recognize(photo, apiKey) {
             })
     });
 }
+
+function parseRes(res) {
+    console.log
+    if (false && (!isSet(() => res.images[0].classifiers.classes) || res.images[0].classifiers.classes.constructor !== Array)) {
+        return 'Something went wrong';
+    }
+
+    var classes = res.images[0].classifiers[0].classes;
+    var ret = classes.map(function (obj) {
+        if (!obj.class || !obj.score) {
+            return 'SOmething went wrong'
+        }
+
+        return obj.class + ': ' + obj.score;
+    }).join('\n')
+
+    if (ret.length <= 0) {
+        return 'Was not able to classify image';
+    }
+    return ret;
+}
+
+// function for testing if json keys exists
+function isSet(fn) {
+    var value;
+    try {
+        value = fn();
+    } catch (err) {
+        value = undefined;
+    } finally {
+        return value !== undefined;
+    }
+};
 
 
 module.exports = recognize;
