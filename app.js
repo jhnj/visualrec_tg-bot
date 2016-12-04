@@ -53,7 +53,7 @@ app.post('/msg', function (req, res) {
         watsonResponse.then((wtResp) => {
             axios.post(bot_url + '/sendMessage', {
                 chat_id: message.chat.id,
-                text: 'fileName: ' + wtResp
+                text: wtResp
             })
                 .then(response => {
                     // We get here if the message was successfully posted
