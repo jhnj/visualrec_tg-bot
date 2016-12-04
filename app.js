@@ -2,8 +2,11 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 const config = require('./config');
-const recognize = require('./watson_connection');
+const recognize = require('./libs/watson_connection');
 
+
+const fs = require('fs');
+if (!fs.existsSync('./temp')) fs.mkdirSync('./temp');
 
 const app = express();
 
@@ -79,7 +82,7 @@ app.post('/msg', function (req, res) {
                         console.log('Error :', err)
                     });
             });
-        
+
         // acknowledge that message was received
         res.end('ok');
     }
