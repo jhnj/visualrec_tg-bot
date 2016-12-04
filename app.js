@@ -10,7 +10,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-var apiKey = process.env.api_key || config.api
+var apiKey = process.env.api_key || config.tg_key
 var bot_url = 'https://api.telegram.org/bot' + apiKey
 
 app.post('/msg', function (req, res) {
