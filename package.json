@@ -21,6 +21,7 @@
     "axios": "^0.15.3",
     "body-parser": "^1.15.2",
     "cfenv": "^1.0.3",
-    "express": "^4.14.0"
+    "express": "^4.14.0",
+    "watson-developer-cloud": "^2.11.0"
   }
 }
