@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const axios = require('axios');
 const config = require('./config');
 const recognize = require('./libs/watson_connection');
+const respond = require('./libs/respond');
 
 
 const fs = require('fs');
@@ -25,67 +26,32 @@ app.post('/msg', function (req, res) {
         return res.end()
     }
 
+    // Check if bot has received photos
     const photos = message.photo;
-    // should be an array with 4 photos
-    if (!photos || photos.constructor !== Array && photo.length < 4) {
-
-        axios.post(bot_url + '/sendMessage', {
-            chat_id: message.chat.id,
-            text: 'Send a photo'
-        })
-            .then(response => {
-                // We get here if the message was successfully posted
-                console.log('Message posted')
-                res.end('ok')
-            })
-            .catch(err => {
-                // ...and here if it was not
-                console.log('Error :', err)
-                res.end('Error :' + err)
-            });
+    // should be an array
+    if (!photos || photos.constructor !== Array) {
+        respond(message.chat.id, bot_url + '/sendMessage', 'Send a photo');
     } else {
 
-
-        // recognize the picture using IBM watson visual recognition
-        // the 3rd image seems to be the largest so we send that
+        // recognize the picture using IBM watson visual recognition apis
+        // TODO: Identify the largest image from photos and send it
         var watsonResponse = recognize(photos[photos.length - 1], apiKey);
 
 
-
-
         watsonResponse.then((wtResp) => {
-            axios.post(bot_url + '/sendMessage', {
-                chat_id: message.chat.id,
-                text: wtResp
-            })
-                .then(response => {
-                    // We get here if the message was successfully posted
-                    console.log('Message posted')
-                })
-                .catch(err => {
-                    // ...and here if it was not
-                    console.log('Error :', err)
-                });
+
+            respond(message.chat.id, bot_url + '/sendMessage', wtResp);
 
         })
             .catch((err) => {
-                axios.post(bot_url + '/sendMessage', {
-                    chat_id: message.chat.id,
-                    text: 'err from watsonResponse catch: ' + err
-                })
-                    .then(response => {
-                        // We get here if the message was successfully posted
-                        console.log('Message posted')
-                    })
-                    .catch(err => {
-                        // ...and here if it was not
-                        console.log('Error :', err)
-                    });
-            });
 
-        // acknowledge that message was received
-        res.end('ok');
+                respond(message.chat.id, bot_url + '/sendMessage',
+                    'Something went wrong when trying to classify the image')
+            });
     }
+
+    // acknowledge that message was received
+    res.end('ok');
 
 
 
