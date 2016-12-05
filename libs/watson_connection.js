@@ -20,9 +20,10 @@ function watson(file) {
         images_file: fs.createReadStream(file)
     };
 
+    // return a promise containing the response from watson
     return new Promise((resolve, reject) => {
         visual_recognition.classify(params, function (err, res) {
-            // delete image
+            // delete image after use
             fs.unlink(file, function (err) {
                 if (err) console.log('fs.unlink failed: ', err);
                 console.log('file deleted');
@@ -51,8 +52,8 @@ function recognize(photo, apiKey) {
             file_id: photo.file_id
         })
             .then((response) => {
-                if (!response.data && !response.data.result && !response.data.result.file_path) {
-                    reject('file_path not found\n' + util.inspect(response));
+                if (!isSet(() => response.data.result.file_path)) {
+                    reject();
                 }
                 // compressed files from telegram are always .jpg and watson needs the file extension
                 var file = './temp/' + puid.generate(true) + '.jpg';
@@ -65,30 +66,32 @@ function recognize(photo, apiKey) {
             })
             .catch((err) => {
                 console.log(err);
-                reject('catcherror: ' + err + '\nbot_url: ' + bot_url + '/getFile\nfile_id: ' + photo.file_id);
+                reject();
             })
     });
 }
 
 function parseRes(res) {
-    console.log
-    if (false && (!isSet(() => res.images[0].classifiers.classes) || res.images[0].classifiers.classes.constructor !== Array)) {
+
+    if ((!isSet(() => res.images[0].classifiers[0].classes) || res.images[0].classifiers[0].classes.constructor !== Array)) {
         return 'Something went wrong';
     }
 
     var classes = res.images[0].classifiers[0].classes;
-    var ret = classes.map(function (obj) {
+
+    if (classes.length <= 0) {
+        return 'Was not able to classify image';
+    }
+
+    // Construct a simple text answer
+    return classes.map(function (obj) {
         if (!obj.class || !obj.score) {
-            return 'SOmething went wrong'
+            return 'Something went wrong'
         }
 
         return obj.class + ': ' + obj.score;
     }).join('\n')
 
-    if (ret.length <= 0) {
-        return 'Was not able to classify image';
-    }
-    return ret;
 }
 
 // function for testing if json keys exists
