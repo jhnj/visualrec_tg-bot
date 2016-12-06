@@ -3,7 +3,8 @@ const bodyParser = require('body-parser');
 const axios = require('axios');
 const config = require('./config');
 const recognize = require('./libs/watson_connection');
-const respond = require('./libs/respond');
+const respond = require('./libs/respond').respond;
+const receive = require('./libs/respond').receive;
 
 
 const fs = require('fs');
@@ -30,7 +31,8 @@ app.post('/msg', function (req, res) {
     const photos = message.photo;
     // should be an array
     if (!photos || photos.constructor !== Array) {
-        respond(message.chat.id, bot_url + '/sendMessage', 'Send a photo');
+        if (message.text)
+            receive(message.chat.id, bot_url + '/sendMessage', message.text);
     } else {
 
         // recognize the picture using IBM watson visual recognition apis
