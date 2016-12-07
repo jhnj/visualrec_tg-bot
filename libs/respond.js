@@ -11,6 +11,10 @@ function addCallback(regexp, cb) {
     callbacks.push({regexp, cb});
 }
 
+
+/**
+ * Receive a text message, test for matching callbacks
+ */
 function receive(chatId, url, message) {
     // test if a matching callback is found
     if (!callbacks.some(reg => {
@@ -24,6 +28,10 @@ function receive(chatId, url, message) {
     }
 }
 
+
+/**
+ * Send a message to a telegram chat
+ */
 function respond(chatId, url, message) {
     axios.post(url, {
         chat_id: chatId,
@@ -40,7 +48,7 @@ function respond(chatId, url, message) {
 }
 
 
-addCallback(/help/i, function (chatId, url, message) {
+addCallback(/\/help/i, function (chatId, url, message) {
     respond(chatId, url, 'help message')
 });
 

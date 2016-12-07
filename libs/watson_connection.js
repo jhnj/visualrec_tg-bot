@@ -8,7 +8,9 @@ const Puid = require('puid');
 var puid = new Puid();
 
 
-
+/**
+ * identify image using 'watson-developer-cloud/visual-recognition' 
+ */
 function watson(file) {
 
     var visual_recognition = new VisualRecognitionV3({
@@ -42,7 +44,9 @@ function watson(file) {
     })
 }
 
-
+/**
+ * Download a picture and identify it using 'watson-developer-cloud/visual-recognition'
+ */
 function recognize(photo, apiKey) {
     var bot_url = 'https://api.telegram.org/bot' + apiKey;
     var file_url = 'https://api.telegram.org/file/bot' + apiKey;
@@ -89,7 +93,8 @@ function parseRes(res) {
             return 'Something went wrong'
         }
 
-        return obj.class + ': ' + obj.score;
+        // return 'classifier: matchpercent%'
+        return obj.class + ': ' + obj.score * 100 + '%';
     }).join('\n')
 
 }
