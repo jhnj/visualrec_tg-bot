@@ -24,7 +24,8 @@ function receive(chatId, url, message) {
             return true;
         }
     })) {
-        respond(chatId, url, 'Send a picture');
+        // don't respond to every message
+        // respond(chatId, url, 'Send a picture');
     }
 }
 
