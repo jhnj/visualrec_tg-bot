@@ -4,8 +4,7 @@
   "description": "Telegram bot using IBM Watson for image recognition",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ./bin/start.js"
+    "package": "zip -r tg-bot.zip app.js config.js libs/ node_modules/ package.json"
   },
   "repository": {
     "type": "git",

@@ -18,14 +18,15 @@ function addCallback(regexp, cb) {
 function receive(chatId, url, message) {
     // test if a matching callback is found
     if (!callbacks.some(reg => {
+        // TODO: lambda doesn't initiate callbacks when done this way
         console.log('Checking regexp: ', reg.regexp, 'with message: ', message);
         if (reg.regexp.exec(message)) {
             reg.cb(chatId, url, message);
             return true;
         }
     })) {
-        // don't respond to every message
-        // respond(chatId, url, 'Send a picture');
+        // now responding to every message
+        respond(chatId, url, 'Send a picture');
     }
 }
 

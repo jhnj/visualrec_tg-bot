@@ -8,7 +8,7 @@ const receive = require('./libs/respond').receive;
 
 
 const fs = require('fs');
-if (!fs.existsSync('./temp')) fs.mkdirSync('./temp');
+//if (!fs.existsSync('./temp')) fs.mkdirSync('./temp');
 
 const app = express();
 
@@ -18,13 +18,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 var apiKey = process.env.api_key || config.tg_key
 var bot_url = 'https://api.telegram.org/bot' + apiKey
 
-app.post('/msg', function (req, res) {
-    const message = req.body.message;
+exports.handler = function (event, context, callback) {
+    const message = event.message;
+    console.log("received: ", event)
 
-    var text = '';
     if (!message) {
         // no message found
-        return res.end()
+        callback(null, "success");
+        return;
     }
 
     // Check if bot has received photos
@@ -33,7 +34,7 @@ app.post('/msg', function (req, res) {
     if (!photos || photos.constructor !== Array) {
         if (message.text)
             receive(message.chat.id, bot_url + '/sendMessage', message.text);
-    } else {
+    } else if (false) {
 
         // recognize the picture using IBM watson visual recognition apis
         // TODO: Identify the largest image from photos and send it
@@ -51,12 +52,4 @@ app.post('/msg', function (req, res) {
                     'Something went wrong when trying to classify the image')
             });
     }
-
-    // acknowledge that message was received
-    res.end('ok');
-
-
-
-});
-
-module.exports = app;
+};
