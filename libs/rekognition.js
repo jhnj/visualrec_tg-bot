@@ -48,7 +48,7 @@ function rekognize(fileName) {
                     console.log(err)
                     reject(err)
                 }
-                else resolve(data)
+                else resolve(parseRes(data))
             })
         })
             .catch((err) => reject(err))
@@ -92,24 +92,22 @@ function recognizePhoto(photo, apiKey) {
 
 function parseRes(res) {
 
-    if ((!isSet(() => res.images[0].classifiers[0].classes) || res.images[0].classifiers[0].classes.constructor !== Array)) {
+    if ((!isSet(() => res.Labels) || res.Labels.constructor !== Array)) {
         return 'Something went wrong';
     }
 
-    var classes = res.images[0].classifiers[0].classes;
-
-    if (classes.length <= 0) {
+    if (res.Labels <= 0) {
         return 'Was not able to classify image';
     }
 
     // Construct a simple text answer
-    return classes.map(function (obj) {
-        if (!obj.class || !obj.score) {
+    return res.Labels.map(function (label) {
+        if (!label.Name || !label.Confidence) {
             return 'Something went wrong'
         }
 
         // return 'classifier: matchpercent%'
-        return obj.class + ': ' + obj.score * 100 + '%';
+        return label.Name + ': ' + label.Confidence + '%';
     }).join('\n')
 
 }

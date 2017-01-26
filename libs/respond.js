@@ -8,25 +8,30 @@ const axios = require('axios');
 const callbacks = [];
 
 function addCallback(regexp, cb) {
-    callbacks.push({regexp, cb});
+    callbacks.push({ regexp, cb });
 }
+
+addCallback(/\/help/i, function (chatId, url, message) {
+    respond(chatId, url, 'help message')
+});
 
 
 /**
  * Receive a text message, test for matching callbacks
  */
 function receive(chatId, url, message) {
+
     // test if a matching callback is found
     if (!callbacks.some(reg => {
-        // TODO: lambda doesn't initiate callbacks when done this way
         console.log('Checking regexp: ', reg.regexp, 'with message: ', message);
         if (reg.regexp.exec(message)) {
+            console.log('regexp found')
             reg.cb(chatId, url, message);
             return true;
         }
     })) {
-        // now responding to every message
-        respond(chatId, url, 'Send a picture');
+        // don't respond to every message
+        // respond(chatId, url, 'Send a picture');
     }
 }
 
@@ -50,9 +55,4 @@ function respond(chatId, url, message) {
 }
 
 
-addCallback(/\/help/i, function (chatId, url, message) {
-    respond(chatId, url, 'help message')
-});
-
-
-module.exports = {respond, receive};
+module.exports = { respond, receive };

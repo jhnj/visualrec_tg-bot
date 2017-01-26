@@ -39,3 +39,5 @@ jspm_packages
 
 # Ignore configs
 config.js
+
+.zip
