@@ -1,4 +1,4 @@
-const VisualRecognitionV3 = require('watson-developer-cloud/visual-recognition/v3');
+const AWS = require('aws-sdk');
 const fs = require('fs');
 const axios = require('axios');
 const util = require('util');
@@ -8,46 +8,57 @@ const Puid = require('puid');
 var puid = new Puid();
 
 
-/**
- * identify image using 'watson-developer-cloud/visual-recognition' 
- */
-function watson(file) {
 
-    var visual_recognition = new VisualRecognitionV3({
-        api_key: config.watson_key,
-        version_date: '2016-05-19'
+/**
+ * identify image using AWS Rekognition
+ */
+function rekognize(fileName) {
+
+    const keyId = process.env.AWS_ACCESS_KEY_ID
+    const secretKey = process.env.AWS_SECRET_ACCESS_KEY
+
+    // No keyId or secretKey found
+    if (!keyId || !secretKey) {
+        return Promise()
+    }
+
+    const rekognition = new AWS.Rekognition({
+        apiVersion: '2017-01-25',
+
     });
 
-    var params = {
-        images_file: fs.createReadStream(file)
-    };
 
-    // return a promise containing the response from watson
+    const file = new Promise((resolve, reject) => {
+        fs.readFile(fileName, (err, data) => {
+            if (err) reject(err);
+            resolve(data)
+        })
+    });
+
     return new Promise((resolve, reject) => {
-        visual_recognition.classify(params, function (err, res) {
-            // delete image after use
-            fs.unlink(file, function (err) {
-                if (err) console.log('fs.unlink failed: ', err);
-                console.log('file deleted');
-            });
-
-            if (err) {
-                console.log(err);
-                reject(err);
-            }
-            else {
-                console.log(JSON.stringify(res, null, 2));
-                resolve(parseRes(res));
-            }
-
-        });
-    })
+        file.then((data) => {
+            console.log(data)
+            const params = {
+                Image: { /* required */
+                    Bytes: data
+                }
+            };
+            rekognition.detectLabels(params, function (err, data) {
+                if (err) {
+                    console.log(err)
+                    reject(err)
+                }
+                else resolve(data)
+            })
+        })
+            .catch((err) => reject(err))
+    });
 }
 
 /**
- * Download a picture and identify it using 'watson-developer-cloud/visual-recognition'
+ * Download a picture and identify it
  */
-function recognize(photo, apiKey) {
+function recognizePhoto(photo, apiKey) {
     var bot_url = 'https://api.telegram.org/bot' + apiKey;
     var file_url = 'https://api.telegram.org/file/bot' + apiKey;
 
@@ -60,11 +71,15 @@ function recognize(photo, apiKey) {
                     reject();
                 }
                 // compressed files from telegram are always .jpg and watson needs the file extension
-                var file = './temp/' + puid.generate(true) + '.jpg';
+                const location = process.env.TempStorage || './temp/'
+                console.log('location: ', location)
+                var file = location + puid.generate(true) + '.jpg';
 
+                console.log(file_url + '/' + response.data.result.file_path)
                 download(file_url + '/' + response.data.result.file_path, file)
                     .then(() => {
-                        resolve(watson(file));
+                        console.log('file downloaded')
+                        resolve(rekognize(file));
                     })
                     .catch((err) => reject('failed here: ' + err));
             })
@@ -112,4 +127,4 @@ function isSet(fn) {
 };
 
 
-module.exports = recognize;
+module.exports = recognizePhoto;

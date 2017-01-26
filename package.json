@@ -1,7 +1,7 @@
 {
   "name": "visualrec_tg-bot",
   "version": "1.0.0",
-  "description": "Telegram bot using IBM Watson for image recognition",
+  "description": "Telegram bot using AWS Rekognition",
   "main": "index.js",
   "scripts": {
     "package": "zip -r tg-bot.zip app.js config.js libs/ node_modules/ package.json"
@@ -17,11 +17,11 @@
   },
   "homepage": "https://github.com/jhnj/visualrec_tg-bot#readme",
   "dependencies": {
+    "aws-sdk": "^2.7.28",
     "axios": "^0.15.3",
     "body-parser": "^1.15.2",
     "cfenv": "^1.0.3",
     "express": "^4.14.0",
-    "puid": "^1.0.5",
-    "watson-developer-cloud": "^2.11.0"
+    "puid": "^1.0.5"
   }
 }

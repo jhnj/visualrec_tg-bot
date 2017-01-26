@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 const config = require('./config');
-const recognize = require('./libs/watson_connection');
+const recognizePhoto = require('./libs/rekognition');
 const respond = require('./libs/respond').respond;
 const receive = require('./libs/respond').receive;
 
@@ -34,22 +34,22 @@ exports.handler = function (event, context, callback) {
     if (!photos || photos.constructor !== Array) {
         if (message.text)
             receive(message.chat.id, bot_url + '/sendMessage', message.text);
-    } else if (false) {
+    } else {
 
-        // recognize the picture using IBM watson visual recognition apis
+        // recognize the picture using AWS Rekognition
         // TODO: Identify the largest image from photos and send it
-        var watsonResponse = recognize(photos[photos.length - 1], apiKey);
+        var res = recognizePhoto(photos[photos.length - 1], apiKey);
 
 
-        watsonResponse.then((wtResp) => {
+        res.then((resp) => {
 
-            respond(message.chat.id, bot_url + '/sendMessage', wtResp);
+            respond(message.chat.id, bot_url + '/sendMessage', resp);
 
         })
             .catch((err) => {
 
                 respond(message.chat.id, bot_url + '/sendMessage',
-                    'Something went wrong when trying to classify the image')
+                    'Something went wrong when trying to classify the image: ' + err)
             });
     }
 };
